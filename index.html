@@ -5,61 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AFC Teller Call Assistant</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-        .container { width: 50%; margin: auto; }
-        input, select, button { width: 100%; padding: 10px; margin: 10px 0; }
-        .result { margin-top: 20px; font-size: 18px; }
-        .tabs { display: flex; justify-content: space-around; }
-        .tab { cursor: pointer; padding: 10px; border: 1px solid #000; }
-        .tab-content { display: none; }
-        .active { display: block; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f2f5;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 90%;
+            max-width: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+        }
+        .logo {
+            display: flex;
+            justify-content: center;
+        }
+        .logo img {
+            width: 100px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            background: #075e54;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .tab {
+            color: white;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .tab.active {
+            background: #128C7E;
+        }
+        .input-group, .result {
+            margin-top: 20px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #128C7E;
+            color: white;
+            cursor: pointer;
+        }
+        button.delete {
+            background: #d9534f;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>AFC Teller Call Assistant</h1>
-        <div class="tabs">
-            <div class="tab" onclick="showTab(0)">Can you enter User ID?</div>
-            <div class="tab" onclick="showTab(1)">Can you select Branch Name?</div>
-            <div class="tab" onclick="showTab(2)">Can you enter Name?</div>
+        <div class="logo">
+            <img src="logo.png" alt="AFC Teller Call Assistant">
         </div>
-
-        <div id="tab-0" class="tab-content active">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('userIdTab')">User ID</div>
+            <div class="tab" onclick="switchTab('branchTab')">Branch</div>
+            <div class="tab" onclick="switchTab('nameTab')">Name</div>
+        </div>
+        <div class="input-group" id="userIdTab">
             <input type="text" id="userId" placeholder="Enter Inbank User ID">
             <button onclick="fetchUserData()">Enter</button>
+            <button onclick="clearFields()">Clear</button>
+            <button class="delete" onclick="deleteData()">Delete</button>
         </div>
-
-        <div id="tab-1" class="tab-content">
-            <select id="branchList"></select>
-            <button onclick="fetchBranchData()">Enter</button>
+        <div class="input-group" id="branchTab" style="display:none;">
+            <select id="branch" onchange="fetchBranchData()">
+                <option value="">Select Branch</option>
+            </select>
         </div>
-
-        <div id="tab-2" class="tab-content">
-            <input type="text" id="userName" placeholder="Enter Name">
-            <button onclick="fetchNameData()">Enter</button>
+        <div class="input-group" id="nameTab" style="display:none;">
+            <input type="text" id="name" placeholder="Enter Name" oninput="fetchNameData()">
         </div>
-
-        <button onclick="clearResults()">Clear</button>
-        <button onclick="deleteEntry()">Delete</button>
         <div class="result" id="result"></div>
     </div>
 
     <script>
-        const sheetId = "1dUJQMfRkDrfxeaNaqSdNRHjQfKZ8Rhgx5qN3MTamuwE";
-        const apiKey = "AIzaSyBkqBMyGiEVmt6ozlejEnyuFskdIb32h_E";
+        const sheetId = "YOUR_GOOGLE_SHEET_ID";
+        const apiKey = "YOUR_GOOGLE_API_KEY";
         const range = "Sheet1!A2:D";
-
-        function showTab(index) {
-            document.querySelectorAll('.tab-content').forEach((tab, i) => {
-                tab.style.display = (i === index) ? 'block' : 'none';
-            });
-        }
 
         async function fetchSheetData() {
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
             const response = await fetch(url);
             const data = await response.json();
-            return data.values || [];
+            return data.values;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
         }
 
         async function fetchUserData() {
@@ -67,53 +116,49 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let user = users.find(row => row[0] === userId);
-            if (user) {
-                resultDiv.innerHTML = `Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]}`;
-            } else {
-                resultDiv.innerHTML = "No user found";
-            }
+            resultDiv.innerHTML = user ? `Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]}` : "No user found";
         }
 
         async function fetchBranchData() {
-            let branch = document.getElementById("branchList").value;
+            let branch = document.getElementById("branch").value;
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
-            let results = users.filter(row => row[2] === branch);
-            resultDiv.innerHTML = results.map(row => `Name: ${row[1]}, Phone: ${row[3]}`).join('<br>');
+            let filteredUsers = users.filter(row => row[2] === branch);
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Name: ${user[1]}, Phone: ${user[3]}`).join('<br>') : "No users found";
         }
 
         async function fetchNameData() {
-            let name = document.getElementById("userName").value.trim();
+            let name = document.getElementById("name").value.trim().toLowerCase();
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
-            let results = users.filter(row => row[1] === name);
-            resultDiv.innerHTML = results.map(row => `Branch: ${row[2]}, Phone: ${row[3]}`).join('<br>');
+            let filteredUsers = users.filter(row => row[1].toLowerCase().includes(name));
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Branch: ${user[2]}, Phone: ${user[3]}`).join('<br>') : "No users found";
         }
 
-        function clearResults() {
-            document.getElementById("result").innerHTML = "";
+        function clearFields() {
             document.getElementById("userId").value = "";
-            document.getElementById("branchList").value = "";
-            document.getElementById("userName").value = "";
+            document.getElementById("branch").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("result").innerHTML = "";
         }
 
-        function deleteEntry() {
-            alert("Delete function not implemented - requires server-side API!");
+        function deleteData() {
+            alert("Delete function requires server API support!");
         }
 
-        async function populateBranchList() {
+        async function populateBranches() {
             let users = await fetchSheetData();
-            let branches = [...new Set(users.map(row => row[2]))];
-            let branchList = document.getElementById("branchList");
+            let branches = [...new Set(users.map(user => user[2]))];
+            let branchSelect = document.getElementById("branch");
             branches.forEach(branch => {
                 let option = document.createElement("option");
                 option.value = branch;
                 option.textContent = branch;
-                branchList.appendChild(option);
+                branchSelect.appendChild(option);
             });
         }
 
-        populateBranchList();
+        populateBranches();
     </script>
 </body>
 </html>
