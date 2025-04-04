@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFC Teller Call Assistant1</title>
+    <title>AFC Teller Call Assistant</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -68,7 +68,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://www.alliancefinance.lk/wp-content/uploads/2024/01/logo-new-removebg-preview.webp" alt="AFC Teller Call Assistant">
+            <img src="logo.png" alt="AFC Teller Call Assistant">
         </div>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('userIdTab')">User ID</div>
@@ -93,12 +93,12 @@
     </div>
 
     <script>
-        const sheetId = "1dUJQMfRkDrfxeaNaqSdNRHjQfKZ8Rhgx5qN3MTamuwE";
-        const apiKey = "AIzaSyBkqBMyGiEVmt6ozlejEnyuFskdIb32h_E";
+        const sheetId = "YOUR_GOOGLE_SHEET_ID";
+        const apiKey = "YOUR_GOOGLE_API_KEY";
         const range = "Sheet1!A2:D";
 
         async function fetchSheetData() {
-            const url = https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey};
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
             const response = await fetch(url);
             const data = await response.json();
             return data.values;
@@ -108,7 +108,7 @@
             document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
             document.getElementById(tabId).style.display = 'block';
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            document.querySelector([onclick="switchTab('${tabId}')"]).classList.add('active');
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
         }
 
         async function fetchUserData() {
@@ -116,7 +116,7 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let user = users.find(row => row[0] === userId);
-            resultDiv.innerHTML = user ? Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]} : "No user found";
+            resultDiv.innerHTML = user ? `Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]}` : "No user found";
         }
 
         async function fetchBranchData() {
@@ -124,7 +124,7 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let filteredUsers = users.filter(row => row[2] === branch);
-            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => Name: ${user[1]}, Phone: ${user[3]}).join('<br>') : "No users found";
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Name: ${user[1]}, Phone: ${user[3]}`).join('<br>') : "No users found";
         }
 
         async function fetchNameData() {
@@ -132,7 +132,7 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let filteredUsers = users.filter(row => row[1].toLowerCase().includes(name));
-            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => Branch: ${user[2]}, Phone: ${user[3]}).join('<br>') : "No users found";
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Branch: ${user[2]}, Phone: ${user[3]}`).join('<br>') : "No users found";
         }
 
         function clearFields() {
