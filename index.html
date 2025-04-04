@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AFC Teller Call Assistant1</title>
+    <title>AFC Teller Call Assistant</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
@@ -21,13 +21,15 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             padding: 20px;
-        }
-        .logo {
-            display: flex;
-            justify-content: center;
+            text-align: center;
         }
         .logo img {
             width: 100px;
+        }
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
         }
         .tabs {
             display: flex;
@@ -60,8 +62,8 @@
             color: white;
             cursor: pointer;
         }
-        button.delete {
-            background: #d9534f;
+        .copy {
+            background: #007bff;
         }
     </style>
 </head>
@@ -70,16 +72,15 @@
         <div class="logo">
             <img src="https://www.alliancefinance.lk/wp-content/uploads/2024/01/logo-new-removebg-preview.webp" alt="AFC Teller Call Assistant">
         </div>
+        <div class="title">AFC Teller Call Assistant</div>
         <div class="tabs">
             <div class="tab active" onclick="switchTab('userIdTab')">User ID</div>
             <div class="tab" onclick="switchTab('branchTab')">Branch</div>
-            <div class="tab" onclick="switchTab('nameTab')">Name</div>
+            <div class="tab" onclick="switchTab('nameTab')">Enter Name</div>
         </div>
         <div class="input-group" id="userIdTab">
             <input type="text" id="userId" placeholder="Enter Inbank User ID">
             <button onclick="fetchUserData()">Enter</button>
-            <button onclick="clearFields()">Clear</button>
-            <button class="delete" onclick="deleteData()">Delete</button>
         </div>
         <div class="input-group" id="branchTab" style="display:none;">
             <select id="branch" onchange="fetchBranchData()">
@@ -90,25 +91,23 @@
             <input type="text" id="name" placeholder="Enter Name" oninput="fetchNameData()">
         </div>
         <div class="result" id="result"></div>
+        <button class="copy" onclick="copyToClipboard()">Copy Result</button>
     </div>
 
     <script>
-        const sheetId = "1dUJQMfRkDrfxeaNaqSdNRHjQfKZ8Rhgx5qN3MTamuwE";
-        const apiKey = "AIzaSyBkqBMyGiEVmt6ozlejEnyuFskdIb32h_E";
-        const range = "Sheet1!A2:D";
-
-        async function fetchSheetData() {
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            return data.values;
-        }
-
         function switchTab(tabId) {
             document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
             document.getElementById(tabId).style.display = 'block';
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
             document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+
+        async function fetchSheetData() {
+            return [
+                ["U001", "John Doe", "Colombo", "0712345678"],
+                ["U002", "Jane Smith", "Kandy", "0756781234"],
+                ["U003", "Mike Perera", "Galle", "0767894561"]
+            ];
         }
 
         async function fetchUserData() {
@@ -119,14 +118,6 @@
             resultDiv.innerHTML = user ? `Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]}` : "No user found";
         }
 
-        async function fetchBranchData() {
-            let branch = document.getElementById("branch").value;
-            let resultDiv = document.getElementById("result");
-            let users = await fetchSheetData();
-            let filteredUsers = users.filter(row => row[2] === branch);
-            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Name: ${user[1]}, Phone: ${user[3]}`).join('<br>') : "No users found";
-        }
-
         async function fetchNameData() {
             let name = document.getElementById("name").value.trim().toLowerCase();
             let resultDiv = document.getElementById("result");
@@ -135,30 +126,15 @@
             resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Branch: ${user[2]}, Phone: ${user[3]}`).join('<br>') : "No users found";
         }
 
-        function clearFields() {
-            document.getElementById("userId").value = "";
-            document.getElementById("branch").value = "";
-            document.getElementById("name").value = "";
-            document.getElementById("result").innerHTML = "";
+        function copyToClipboard() {
+            let resultText = document.getElementById("result").innerText;
+            if (resultText) {
+                navigator.clipboard.writeText(resultText);
+                alert("Result copied!");
+            } else {
+                alert("No data to copy");
+            }
         }
-
-        function deleteData() {
-            alert("Delete function requires server API support!");
-        }
-
-        async function populateBranches() {
-            let users = await fetchSheetData();
-            let branches = [...new Set(users.map(user => user[2]))];
-            let branchSelect = document.getElementById("branch");
-            branches.forEach(branch => {
-                let option = document.createElement("option");
-                option.value = branch;
-                option.textContent = branch;
-                branchSelect.appendChild(option);
-            });
-        }
-
-        populateBranches();
     </script>
 </body>
 </html>
