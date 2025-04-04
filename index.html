@@ -146,7 +146,16 @@
         function deleteData() {
             alert("Delete function requires server API support!");
         }
-
+        
+        function copyToClipboard() {
+            let resultText = document.getElementById("result").innerText;
+            if (resultText) {
+                navigator.clipboard.writeText(resultText);
+                alert("Result copied!");
+            } else {
+                alert("No data to copy");
+            }
+        }
         async function populateBranches() {
             let users = await fetchSheetData();
             let branches = [...new Set(users.map(user => user[2]))];
