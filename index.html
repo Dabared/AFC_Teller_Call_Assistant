@@ -93,9 +93,10 @@
     </div>
 
     <script>
-        const sheetId = "YOUR_GOOGLE_SHEET_ID";
-        const apiKey = "YOUR_GOOGLE_API_KEY";
+        const sheetId = "1dUJQMfRkDrfxeaNaqSdNRHjQfKZ8Rhgx5qN3MTamuwE";
+        const apiKey = "AIzaSyBkqBMyGiEVmt6ozlejEnyuFskdIb32h_E";
         const range = "Sheet1!A2:D";
+
 
         async function fetchSheetData() {
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
