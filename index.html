@@ -93,21 +93,29 @@
         <div class="result" id="result"></div>
         <button class="copy" onclick="copyToClipboard()">Copy Result</button>
     </div>
-
     <script>
+        const sheetId = "1dUJQMfRkDrfxeaNaqSdNRHjQfKZ8Rhgx5qN3MTamuwE";
+        const apiKey = "AIzaSyBkqBMyGiEVmt6ozlejEnyuFskdIb32h_E";
+        const range = "Sheet1!A2:D";
+
+        async function fetchSheetData() {
+            const url = https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey};
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.values;
+        }
+    async function fetchSheetData() {
+            const url = https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey};
+            const response = await fetch(url);
+            const data = await response.json();
+            return data.values;
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
             document.getElementById(tabId).style.display = 'block';
             document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
-        }
-
-        async function fetchSheetData() {
-            return [
-                ["U001", "John Doe", "Colombo", "0712345678"],
-                ["U002", "Jane Smith", "Kandy", "0756781234"],
-                ["U003", "Mike Perera", "Galle", "0767894561"]
-            ];
+            document.querySelector([onclick="switchTab('${tabId}')"]).classList.add('active');
         }
 
         async function fetchUserData() {
@@ -115,7 +123,15 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let user = users.find(row => row[0] === userId);
-            resultDiv.innerHTML = user ? `Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]}` : "No user found";
+            resultDiv.innerHTML = user ? Name: ${user[1]}<br>Branch: ${user[2]}<br>Phone: ${user[3]} : "No user found";
+        }
+
+        async function fetchBranchData() {
+            let branch = document.getElementById("branch").value;
+            let resultDiv = document.getElementById("result");
+            let users = await fetchSheetData();
+            let filteredUsers = users.filter(row => row[2] === branch);
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => Name: ${user[1]}, Phone: ${user[3]}).join('<br>') : "No users found";
         }
 
         async function fetchNameData() {
@@ -123,9 +139,34 @@
             let resultDiv = document.getElementById("result");
             let users = await fetchSheetData();
             let filteredUsers = users.filter(row => row[1].toLowerCase().includes(name));
-            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => `Branch: ${user[2]}, Phone: ${user[3]}`).join('<br>') : "No users found";
+            resultDiv.innerHTML = filteredUsers.length ? filteredUsers.map(user => Branch: ${user[2]}, Phone: ${user[3]}).join('<br>') : "No users found";
         }
 
+        function clearFields() {
+            document.getElementById("userId").value = "";
+            document.getElementById("branch").value = "";
+            document.getElementById("name").value = "";
+            document.getElementById("result").innerHTML = "";
+        }
+
+        function deleteData() {
+            alert("Delete function requires server API support!");
+        }
+
+        async function populateBranches() {
+            let users = await fetchSheetData();
+            let branches = [...new Set(users.map(user => user[2]))];
+            let branchSelect = document.getElementById("branch");
+            branches.forEach(branch => {
+                let option = document.createElement("option");
+                option.value = branch;
+                option.textContent = branch;
+                branchSelect.appendChild(option);
+            });
+        }
+
+        populateBranches();
+   
         function copyToClipboard() {
             let resultText = document.getElementById("result").innerText;
             if (resultText) {
